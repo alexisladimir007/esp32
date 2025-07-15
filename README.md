@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ESP32 GPS Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <style>
+        #map { height: 100vh; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Configura Firebase (reemplaza con tus datos)
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            databaseURL: "https://TU_PROYECTO.firebaseio.com",
+            projectId: "TU_PROYECTO"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Mapa Leaflet
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const marker = L.marker([0, 0]).addTo(map);
+
+        // Escucha cambios en Firebase
+        firebase.database().ref('dispositivos/esp32').on('value', (snapshot) => {
+            const { lat, lon } = snapshot.val();
+            if (lat && lon) {
+                marker.setLatLng([lat, lon]);
+                map.setView([lat, lon], 15);
+                marker.bindPopup(`<b>ESP32</b><br>Lat: ${lat.toFixed(6)}<br>Lon: ${lon.toFixed(6)}`).openPopup();
+            }
+        });
+    </script>
+</body>
+</html>
